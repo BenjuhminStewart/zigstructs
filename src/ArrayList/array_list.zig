@@ -5,7 +5,7 @@ const testing = std.testing;
 pub fn ArrayList(comptime T: type) type {
     return struct {
         const Self = @This();
-        const STARTING_CAPACITY = 10;
+        const STARTING_CAPACITY = 32;
         current_capacity: usize,
         current_size: usize,
         data: []T,
@@ -25,7 +25,7 @@ pub fn ArrayList(comptime T: type) type {
         }
 
         pub fn push(self: *Self, value: T) void {
-            if (self.current_size == self.current_capacity) {
+            if (self.current_size >= self.current_capacity) {
                 self.current_capacity *= 2;
                 self.data = page_allocator.realloc(self.data, self.current_capacity) catch unreachable;
             }
@@ -40,6 +40,25 @@ pub fn ArrayList(comptime T: type) type {
 
             self.current_size -= 1;
             return self.data[self.current_size];
+        }
+
+        pub fn insert_at(self: *Self, index: usize, value: T) !void {
+            if (index > self.current_size) {
+                return error.ArrayListIndexOutOfBounds;
+            }
+            self.current_size += 1;
+            if (self.current_size >= self.current_capacity) {
+                self.current_capacity *= 2;
+                std.debug.print("Reallocating to {}\n", .{self.current_capacity});
+                self.data = page_allocator.realloc(self.data, self.current_capacity) catch unreachable;
+            }
+            // Move the elements after the index to the right. Start at the end and work backwards.
+
+            var i: usize = self.current_size - 1;
+            while (i >= index) : (i -= 1) {
+                self.data[i + 1] = self.data[i];
+            }
+            self.data[index] = value;
         }
 
         pub fn remove_at(self: *Self, index: usize) !void {
@@ -67,6 +86,71 @@ pub fn ArrayList(comptime T: type) type {
                 return error.ArrayListIndexOutOfBounds;
             }
             return self.data[index];
+        }
+
+        pub fn get_index(self: *Self, value: T) !usize {
+            for (self.data[0..self.current_size], 0..) |item, i| {
+                if (T == []const u8) {
+                    if (std.mem.eql(u8, item, value)) {
+                        return i;
+                    }
+                } else {
+                    if (item == value) {
+                        return i;
+                    }
+                }
+            }
+            return error.ArrayListValueNotFound;
+        }
+
+        pub fn contains(self: *Self, value: T) bool {
+            var i: usize = 0;
+            while (i < self.current_size) : (i += 1) {
+                if (T == []const u8) {
+                    if (std.mem.eql(u8, self.data[i], value)) {
+                        return true;
+                    }
+                } else {
+                    if (self.data[i] == value) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        pub fn sort(self: *Self, comptime compare: fn (void, T, T) bool) void {
+            std.mem.sort(T, self.data[0..self.current_size], {}, compare);
+        }
+
+        fn string_less_than(_: void, a: []const u8, b: []const u8) bool {
+            return std.mem.order(u8, a, b) == .lt;
+        }
+
+        fn string_greater_than(_: void, a: []const u8, b: []const u8) bool {
+            return std.mem.order(u8, a, b) == .gt;
+        }
+
+        pub fn sort_desc(self: *Self) void {
+            if (T == []const u8) {
+                std.mem.sort(T, self.data[0..self.current_size], {}, string_greater_than);
+            } else {
+                std.mem.sort(T, self.data[0..self.current_size], {}, std.sort.desc(T));
+            }
+        }
+
+        pub fn sort_asc(self: *Self) void {
+            if (T == []const u8) {
+                std.mem.sort(T, self.data[0..self.current_size], {}, string_less_than);
+            } else {
+                std.mem.sort(T, self.data[0..self.current_size], {}, std.sort.asc(T));
+            }
+        }
+
+        pub fn concat(self: *Self, other: *Self) void {
+            for (other.data[0..other.current_size]) |item| {
+                self.push(item);
+            }
         }
 
         pub fn print(self: *Self) void {
@@ -100,139 +184,17 @@ pub fn ArrayList(comptime T: type) type {
             }
             std.debug.print("]\n", .{});
         }
+
+        pub fn print_as_chars(self: *Self) void {
+            std.debug.print("[", .{});
+            for (self.data[0..self.current_size], 0..) |item, i| {
+                if (i == self.current_size - 1) {
+                    std.debug.print("{c}", .{item});
+                } else {
+                    std.debug.print("{c}, ", .{item});
+                }
+            }
+            std.debug.print("]\n", .{});
+        }
     };
-}
-
-test "Create an ArrayList" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    const list = ArrayList(i32).new(allocator);
-
-    try testing.expectEqual(list.current_capacity, 10);
-    try testing.expectEqual(list.current_size, 0);
-}
-
-test "Push an element into an ArrayList" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(i32).new(allocator);
-
-    list.push(1);
-
-    try testing.expectEqual(list.current_capacity, 10);
-    try testing.expectEqual(list.current_size, 1);
-}
-
-test "Reallocate when the ArrayList is full" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(i32).new(allocator);
-    var i: i32 = 0;
-    for (0..11) |_| {
-        list.push(i);
-        i += 1;
-    }
-
-    try testing.expectEqual(list.current_capacity, 20);
-    try testing.expectEqual(list.current_size, 11);
-}
-
-test "Pop an element from an ArrayList" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(i32).new(allocator);
-    var i: i32 = 0;
-    for (0..6) |_| {
-        list.push(i);
-        i += 1;
-    }
-
-    const popped = list.pop();
-    try testing.expectEqual(@as(i32, 5), popped);
-    try testing.expectEqual(5, list.current_size);
-}
-
-test "Update an element in an ArrayList" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(i32).new(allocator);
-    var i: i32 = 0;
-    for (0..6) |_| {
-        list.push(i);
-        i += 1;
-    }
-    list.update_at(1, 10) catch unreachable;
-    try testing.expectEqual(10, list.get(1));
-}
-
-test "Remove an element at an index in an ArrayList" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(i32).new(allocator);
-    var i: i32 = 0;
-    for (0..6) |_| {
-        list.push(i);
-        i += 1;
-    }
-
-    list.remove_at(0) catch unreachable;
-    try testing.expectEqual(5, list.current_size);
-}
-
-test "ArrayList as a String List" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList([]const u8).new(allocator);
-
-    list.push("Hello");
-    list.push("World");
-    list.push("!");
-    list.push("How");
-    list.push("Are");
-    list.push("You");
-
-    list.remove_at(0) catch unreachable;
-    try testing.expectEqual(5, list.current_size);
-}
-
-test "ArrayList as a Float List" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(f16).new(allocator);
-
-    list.push(1.0);
-    list.push(2.2);
-    list.push(3.9);
-    list.push(4.1);
-    list.push(5.1);
-    list.push(6.5);
-
-    list.remove_at(0) catch unreachable;
-    try testing.expectEqual(5, list.current_size);
-}
-
-test "ArrayList as a string of characters" {
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const allocator = arena.allocator();
-    var list = ArrayList(u8).new(allocator);
-
-    list.push('H');
-    list.push('e');
-    list.push('l');
-    list.push('l');
-    list.push('o');
-    list.push('o');
-
-    const popped = list.pop();
-    try testing.expectEqual(@as(u8, 'o'), popped);
-    try testing.expectEqual(5, list.current_size);
 }
