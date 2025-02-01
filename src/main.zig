@@ -1,15 +1,15 @@
 const std = @import("std");
 const ArrayList = @import("ArrayList/array_list.zig");
 
-pub fn main() !void {
+pub fn main() void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
     defer arena.deinit();
     const allocator = arena.allocator();
 
-    try testArrayList(allocator);
+    testArrayList(allocator);
 }
 
-fn testArrayList(allocator: std.mem.Allocator) !void {
+fn testArrayList(allocator: std.mem.Allocator) void {
     var string_list = ArrayList.ArrayList([]const u8).new(allocator);
     defer string_list.free();
 
