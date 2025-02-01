@@ -72,10 +72,30 @@ pub fn ArrayList(comptime T: type) type {
         pub fn print(self: *Self) void {
             std.debug.print("[", .{});
             for (self.data[0..self.current_size], 0..) |item, i| {
-                if (i == self.current_size - 1) {
-                    std.debug.print("{}", .{item});
+                if (T == []const u8) {
+                    if (i == self.current_size - 1) {
+                        std.debug.print("\"{s}\"", .{item});
+                    } else {
+                        std.debug.print("\"{s}\", ", .{item});
+                    }
+                } else if (T == f16 or T == f32 or T == f64 or T == f80 or T == f128) {
+                    if (i == self.current_size - 1) {
+                        std.debug.print("{d}", .{item});
+                    } else {
+                        std.debug.print("{d}, ", .{item});
+                    }
+                } else if (T == u8 or T == u16 or T == u32 or T == u64 or T == u128 or T == i8 or T == i16 or T == i32 or T == i64 or T == i128) {
+                    if (i == self.current_size - 1) {
+                        std.debug.print("{}", .{item});
+                    } else {
+                        std.debug.print("{}, ", .{item});
+                    }
                 } else {
-                    std.debug.print("{}, ", .{item});
+                    if (i == self.current_size - 1) {
+                        std.debug.print("{any}", .{item});
+                    } else {
+                        std.debug.print("{any}, ", .{item});
+                    }
                 }
             }
             std.debug.print("]\n", .{});
@@ -161,8 +181,58 @@ test "Remove an element at an index in an ArrayList" {
         i += 1;
     }
 
-    list.print();
     list.remove_at(0) catch unreachable;
-    list.print();
+    try testing.expectEqual(5, list.current_size);
+}
+
+test "ArrayList as a String List" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    var list = ArrayList([]const u8).new(allocator);
+
+    list.push("Hello");
+    list.push("World");
+    list.push("!");
+    list.push("How");
+    list.push("Are");
+    list.push("You");
+
+    list.remove_at(0) catch unreachable;
+    try testing.expectEqual(5, list.current_size);
+}
+
+test "ArrayList as a Float List" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    var list = ArrayList(f16).new(allocator);
+
+    list.push(1.0);
+    list.push(2.2);
+    list.push(3.9);
+    list.push(4.1);
+    list.push(5.1);
+    list.push(6.5);
+
+    list.remove_at(0) catch unreachable;
+    try testing.expectEqual(5, list.current_size);
+}
+
+test "ArrayList as a string of characters" {
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
+    var list = ArrayList(u8).new(allocator);
+
+    list.push('H');
+    list.push('e');
+    list.push('l');
+    list.push('l');
+    list.push('o');
+    list.push('o');
+
+    const popped = list.pop();
+    try testing.expectEqual(@as(u8, 'o'), popped);
     try testing.expectEqual(5, list.current_size);
 }
