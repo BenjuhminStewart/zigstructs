@@ -35,3 +35,8 @@ pub fn main() void {
 - `get(index: usize) -> T`
 - `update_at(index: usize, value: T) -> void`
 - `print() -> void`
+
+## Contributing
+
+If you want to contribute, feel free to submit an issue or a PR and I will get around to looking at it.
+
