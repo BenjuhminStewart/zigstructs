@@ -8,7 +8,7 @@ This is a generic `ArrayList` data structure
 
 ### Usage
 
-```
+```zig
 const std = @import("std");
 const ArrayList = @import("ArrayList/array_list.zig");
 
@@ -45,7 +45,7 @@ This is a generic `LinkedList` data structure
 
 ### Usage
 
-```
+```zig
 const std = @import("std");
 const LinkedList = @import("LinkedList/linked_list.zig");
 
