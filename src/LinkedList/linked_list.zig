@@ -244,16 +244,5 @@ pub fn LinkedList(comptime T: type) type {
             }
             std.debug.print("null {c}\n", .{'}'});
         }
-
-        pub fn print_chars(self: *LinkedList([]const u8)) !void {
-            if (T != u8) {
-                return error.WrongType;
-            }
-            var current = self.head;
-            while (current) |node| {
-                std.debug.print("{s}\n", .{node.data});
-                current = node.next;
-            }
-        }
     };
 }
