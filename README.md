@@ -13,15 +13,18 @@ const std = @import("std");
 const ArrayList = @import("ArrayList/array_list.zig");
 
 pub fn main() void {
-  var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-  defer arena.deinit();
-  const allocator = arena.allocator();
+  var gpa = std.heap.GeneralPurposeAllocator(.{}){}; // GPA saves memory as opposed to the page allocator
+  defer _ = gpa.deinit();
+  const allocator = gpa.allocator();
 
   // to make list of strings
   var list_str = ArrayList.ArrayList([]const u8).new(allocator)
+  defer list_str.free(); // don't forget to free the list
+
 
   // to make list of i8
   var list_i8 = ArrayList.ArrayList(i8).new(allocator)
+  defer list_i8.free(); // don't forget to free the list
 }
 ```
 

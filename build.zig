@@ -1,5 +1,10 @@
 const std = @import("std");
 
+const test_files = [_][]const u8{
+    "src/ArrayList/test.zig",
+    "src/LinkedList/test.zig",
+};
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
 
@@ -27,12 +32,13 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
 
-    const exe_unit_tests = b.addTest(.{
-        .root_module = exe_mod,
-    });
-
-    const run_exe_unit_tests = b.addRunArtifact(exe_unit_tests);
-
     const test_step = b.step("test", "Run unit tests");
-    test_step.dependOn(&run_exe_unit_tests.step);
+    for (test_files) |file| {
+        const unit_tests = b.addTest(.{
+            .root_source_file = b.path(file),
+        });
+
+        const run_unit_tests = b.addRunArtifact(unit_tests);
+        test_step.dependOn(&run_unit_tests.step);
+    }
 }

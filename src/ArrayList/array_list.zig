@@ -1,6 +1,5 @@
 const std = @import("std");
 const page_allocator = std.heap.page_allocator;
-const testing = std.testing;
 
 pub fn ArrayList(comptime T: type) type {
     return struct {
