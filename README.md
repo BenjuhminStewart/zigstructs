@@ -6,22 +6,25 @@ Recreating Data Structures In Zig!
 
 This is a generic `ArrayList` data structure
 
-### Instantiation
+### Usage
 
 ```
 const std = @import("std");
 const ArrayList = @import("ArrayList/array_list.zig");
 
 pub fn main() void {
-  var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-  defer arena.deinit();
-  const allocator = arena.allocator();
+  var gpa = std.heap.GeneralPurposeAllocator(.{}){}; // GPA saves memory as opposed to the page allocator
+  defer _ = gpa.deinit();
+  const allocator = gpa.allocator();
 
   // to make list of strings
   var list_str = ArrayList.ArrayList([]const u8).new(allocator)
+  defer list_str.free(); // don't forget to free the list when using a GPA
+
 
   // to make list of i8
   var list_i8 = ArrayList.ArrayList(i8).new(allocator)
+  defer list_i8.free(); // don't forget to free the list when using a GPA
 }
 ```
 
@@ -34,6 +37,46 @@ pub fn main() void {
 - `remove_at(index: usize) -> void`
 - `get(index: usize) -> T`
 - `update_at(index: usize, value: T) -> void`
+- `print() -> void`
+
+## Linked List
+
+This is a generic `LinkedList` data structure
+
+### Usage
+
+```
+const std = @import("std");
+const LinkedList = @import("LinkedList/linked_list.zig");
+
+pub fn main() void {
+  var gpa = std.heap.GeneralPurposeAllocator(.{}){}; // GPA saves memory as opposed to the page allocator
+  defer _ = gpa.deinit();
+  const allocator = gpa.allocator();
+
+  // to make list of strings
+  var list_str = LinkedList.LinkedList([]const u8).new(allocator)
+  defer list_str.free(); // don't forget to free the list when using a GPA
+
+  // to make list of i8
+  var list_i8 = LinkedList.LinkedList(i8).new(allocator)
+  defer list_i8.free(); // don't forget to free the list when using a GPA
+}
+```
+
+### Methods:
+
+- `new(allocator: std.mem.Allocator) -> LinkedList<T>`
+- `free() -> void`
+- `prepend(value: T) -> void`
+- `push(value: T) -> void`
+- `insert_at(index: usize, value: T) -> void`
+- `remove_at(index: usize) -> !void`
+- `get(index: usize) -> ?*Node`
+- `get_index(value: T) -> ?usize`
+- `contains(value: T) -> bool`
+- `pop_head() -> ?T`
+- `pop_tail() -> ?T`
 - `print() -> void`
 
 ## Contributing
