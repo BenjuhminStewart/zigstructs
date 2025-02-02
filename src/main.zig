@@ -2,6 +2,7 @@ const std = @import("std");
 const ArrayList = @import("ArrayList/array_list.zig").ArrayList;
 const LinkedList = @import("LinkedList/linked_list.zig").LinkedList;
 const Stack = @import("Stack/stack.zig").Stack;
+const Queue = @import("Queue/queue.zig").Queue;
 
 pub fn main() void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -11,6 +12,7 @@ pub fn main() void {
     testLinkedList(allocator);
     testArrayList(allocator);
     testStack(allocator);
+    testQueue(allocator);
 }
 
 fn testLinkedList(allocator: std.mem.Allocator) void {
@@ -142,5 +144,47 @@ fn testStack(allocator: std.mem.Allocator) void {
     u128_stack.push(2123134123131);
     u128_stack.push(3.123e+21);
     u128_stack.print();
+    std.debug.print("\n--------------------------\n", .{});
+}
+
+fn testQueue(allocator: std.mem.Allocator) void {
+    std.debug.print("\n----  Testing  Queue  ----\n\n", .{});
+    var string_queue = Queue([]const u8).new(allocator);
+    defer string_queue.free();
+    string_queue.enqueue("Hello");
+    string_queue.enqueue("World");
+    string_queue.enqueue("!");
+    string_queue.print();
+
+    var int_queue = Queue(i32).new(allocator);
+    defer int_queue.free();
+    int_queue.enqueue(1);
+    int_queue.enqueue(2);
+    int_queue.enqueue(3);
+    int_queue.enqueue(4);
+    _ = int_queue.dequeue();
+    int_queue.print();
+
+    var float_queue = Queue(f32).new(allocator);
+    defer float_queue.free();
+    float_queue.enqueue(1.1);
+    float_queue.enqueue(2.1);
+    float_queue.enqueue(3.2);
+    float_queue.enqueue(1.79);
+    float_queue.print();
+
+    var bool_queue = Queue(bool).new(allocator);
+    defer bool_queue.free();
+    bool_queue.enqueue(true);
+    bool_queue.enqueue(false);
+    bool_queue.enqueue(true);
+    bool_queue.print();
+
+    var u128_queue = Queue(u128).new(allocator);
+    defer u128_queue.free();
+    u128_queue.enqueue(11010002010);
+    u128_queue.enqueue(2123134123131);
+    u128_queue.enqueue(3.123e+21);
+    u128_queue.print();
     std.debug.print("\n--------------------------\n", .{});
 }

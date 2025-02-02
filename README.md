@@ -113,6 +113,40 @@ pub fn main() void {
 - `peek() -> T`
 - `print() -> void`
 
+## Queue
+
+This is a generic `Queue` data structure
+
+### Usage
+
+```zig
+const std = @import("std");
+const Queue = @import("Queue/queue.zig").Queue;
+
+pub fn main() void {
+  var gpa = std.heap.GeneralPurposeAllocator(.{}){}; // GPA saves memory as opposed to the page allocator
+  defer _ = gpa.deinit();
+  const allocator = gpa.allocator();
+
+  // to make queue of strings
+  var list_str = Queue([]const u8).new(allocator)
+  defer list_str.free(); // don't forget to free the list when using a GPA
+
+  // to make queue of i8
+  var list_i8 = Queue(i8).new(allocator)
+  defer list_i8.free(); // don't forget to free the list when using a GPA
+}
+```
+
+### Methods:
+
+- `new(allocator: std.mem.Allocator) -> Queue<T>`
+- `free() -> void`
+- `enqueue(value: T) -> void`
+- `dequeue() -> !T`
+- `peek() -> !T`
+- `print() -> void`
+
 ## Contributing
 
 If you want to contribute, feel free to submit an issue or a PR and I will get around to looking at it.
