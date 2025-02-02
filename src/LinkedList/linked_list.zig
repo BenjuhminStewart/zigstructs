@@ -1,39 +1,10 @@
 const std = @import("std");
-const page_allocator = std.heap.page_allocator;
 
 pub fn LinkedList(comptime T: type) type {
     return struct {
         const Node = struct {
             data: T,
             next: ?*Node = null,
-
-            pub fn new(data: T) Node {
-                return Node{
-                    .data = data,
-                };
-            }
-
-            pub fn print(self: *Node) void {
-                if (T == []const u8) {
-                    if (self.next) |_| {
-                        std.debug.print("Node: {c} .data: {s}, .next: Node... {c}\n", .{ '{', self.data, '}' });
-                    } else {
-                        std.debug.print("Node: {c} .data: {s}, .next: null {c}\n", .{ '{', self.data, '}' });
-                    }
-                } else if (T == f16 or T == f32 or T == f64 or T == f80 or T == f128) {
-                    if (self.next) |_| {
-                        std.debug.print("Node: {c} .data: {d}, .next: Node... {c}\n", .{ '{', self.data, '}' });
-                    } else {
-                        std.debug.print("Node: {c} .data: {d}, .next: null {c}\n", .{ '{', self.data, '}' });
-                    }
-                } else {
-                    if (self.next) |_| {
-                        std.debug.print("Node: {c} .data: {}, .next: Node... {c}\n", .{ '{', self.data, '}' });
-                    } else {
-                        std.debug.print("Node: {c} .data: {}, .next: null {c}\n", .{ '{', self.data, '}' });
-                    }
-                }
-            }
         };
         const Self = @This();
         head: ?*Node = null,
