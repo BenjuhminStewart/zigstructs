@@ -1,5 +1,4 @@
 const std = @import("std");
-const page_allocator = std.heap.page_allocator;
 
 pub fn ArrayList(comptime T: type) type {
     return struct {
@@ -14,19 +13,19 @@ pub fn ArrayList(comptime T: type) type {
             return Self{
                 .current_capacity = STARTING_CAPACITY,
                 .current_size = 0,
-                .data = page_allocator.alloc(T, STARTING_CAPACITY) catch unreachable,
+                .data = allocator.alloc(T, STARTING_CAPACITY) catch unreachable,
                 .allocator = allocator,
             };
         }
 
         pub fn free(self: *Self) void {
-            page_allocator.free(self.data);
+            self.allocator.free(self.data);
         }
 
         pub fn push(self: *Self, value: T) void {
             if (self.current_size >= self.current_capacity) {
                 self.current_capacity *= 2;
-                self.data = page_allocator.realloc(self.data, self.current_capacity) catch unreachable;
+                self.data = self.allocator.realloc(self.data, self.current_capacity) catch unreachable;
             }
             self.data[self.current_size] = value;
             self.current_size += 1;
@@ -49,7 +48,7 @@ pub fn ArrayList(comptime T: type) type {
             if (self.current_size >= self.current_capacity) {
                 self.current_capacity *= 2;
                 std.debug.print("Reallocating to {}\n", .{self.current_capacity});
-                self.data = page_allocator.realloc(self.data, self.current_capacity) catch unreachable;
+                self.data = self.allocator.realloc(self.data, self.current_capacity) catch unreachable;
             }
             // Move the elements after the index to the right. Start at the end and work backwards.
 

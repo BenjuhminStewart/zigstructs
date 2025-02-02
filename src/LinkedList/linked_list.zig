@@ -228,7 +228,7 @@ pub fn LinkedList(comptime T: type) type {
             std.debug.print("{c} ", .{'{'});
             if (T == []const u8) {
                 while (current) |node| {
-                    std.debug.print("{s} -> ", .{node.data});
+                    std.debug.print("{c}{s}{c} -> ", .{ '"', node.data, '"' });
                     current = node.next;
                 }
             } else if (T == f16 or T == f32 or T == f64 or T == f80 or T == f128) {
