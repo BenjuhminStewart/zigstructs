@@ -4,10 +4,10 @@ Recreating Data Structures In Zig!
 
 ## Table of Contents
 
-- [ArrayList](##ArrayList)
-- [Linked List](##Linked-List)
-- [Stack](##Stack)
-- [Queue](##Queue)
+- [ArrayList](#arraylist)
+- [Linked List](#linked-list)
+- [Stack](#stack)
+- [Queue](#queue)
 
 ## ArrayList
 
