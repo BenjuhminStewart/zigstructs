@@ -5,6 +5,7 @@ const test_files = [_][]const u8{
     "src/LinkedList/test.zig",
     "src/Stack/test.zig",
     "src/Queue/test.zig",
+    "src/PriorityQueue/test.zig",
 };
 
 pub fn build(b: *std.Build) void {

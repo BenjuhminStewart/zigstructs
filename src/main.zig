@@ -3,6 +3,7 @@ const ArrayList = @import("ArrayList/array_list.zig").ArrayList;
 const LinkedList = @import("LinkedList/linked_list.zig").LinkedList;
 const Stack = @import("Stack/stack.zig").Stack;
 const Queue = @import("Queue/queue.zig").Queue;
+const PriorityQueue = @import("PriorityQueue/priority_queue.zig").PriorityQueue;
 
 pub fn main() void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -13,6 +14,7 @@ pub fn main() void {
     testArrayList(allocator);
     testStack(allocator);
     testQueue(allocator);
+    testPriorityQueue(allocator);
 }
 
 fn testLinkedList(allocator: std.mem.Allocator) void {
@@ -185,6 +187,64 @@ fn testQueue(allocator: std.mem.Allocator) void {
     u128_queue.enqueue(11010002010);
     u128_queue.enqueue(2123134123131);
     u128_queue.enqueue(3.123e+21);
+    u128_queue.print();
+    std.debug.print("\n--------------------------\n", .{});
+}
+
+fn testPriorityQueue(allocator: std.mem.Allocator) void {
+    std.debug.print("\n----Testing PriorityQueue----\n\n", .{});
+    const comparator_int: *const fn (i32, i32) bool = struct {
+        pub fn comparator(a: i32, b: i32) bool {
+            return a < b;
+        }
+    }.comparator;
+
+    const comparator_float: *const fn (f32, f32) bool = struct {
+        pub fn comparator(a: f32, b: f32) bool {
+            return a < b;
+        }
+    }.comparator;
+    const comparator_u128: *const fn (u128, u128) bool = struct {
+        pub fn comparator(a: u128, b: u128) bool {
+            return a < b;
+        }
+    }.comparator;
+
+    const comparator_string: *const fn ([]const u8, []const u8) bool = struct {
+        pub fn comparator(a: []const u8, b: []const u8) bool {
+            return std.mem.lessThan(u8, a, b);
+        }
+    }.comparator;
+
+    var string_queue = PriorityQueue([]const u8).new(allocator, comparator_string);
+    defer string_queue.free();
+    string_queue.offer("Hello");
+    string_queue.offer("Worldey");
+    string_queue.offer("!");
+    string_queue.print();
+
+    var int_queue = PriorityQueue(i32).new(allocator, comparator_int);
+    defer int_queue.free();
+    int_queue.offer(1);
+    int_queue.offer(2);
+    int_queue.offer(3);
+    int_queue.offer(4);
+    _ = int_queue.poll() catch unreachable;
+    int_queue.print();
+
+    var float_queue = PriorityQueue(f32).new(allocator, comparator_float);
+    defer float_queue.free();
+    float_queue.offer(1.1);
+    float_queue.offer(2.1);
+    float_queue.offer(3.2);
+    float_queue.offer(1.79);
+    float_queue.print();
+
+    var u128_queue = PriorityQueue(u128).new(allocator, comparator_u128);
+    defer u128_queue.free();
+    u128_queue.offer(11010002010);
+    u128_queue.offer(2123134123131);
+    u128_queue.offer(3.123e+21);
     u128_queue.print();
     std.debug.print("\n--------------------------\n", .{});
 }
