@@ -2,6 +2,13 @@
 
 Recreating Data Structures In Zig!
 
+## Table of Contents
+
+- [ArrayList](#arraylist)
+- [LinkedList](#linked-list)
+- [Stack](#stack)
+- [Queue](#queue)
+
 ## ArrayList
 
 This is a generic `ArrayList` data structure
